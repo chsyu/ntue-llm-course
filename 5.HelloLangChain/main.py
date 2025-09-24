@@ -1,4 +1,3 @@
-# pip install langchain langchain-ollama fastapi uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Optional
