@@ -4,18 +4,17 @@ import ollama
 import uvicorn
 
 OLLAMA_URL = "http://localhost:11434"  # Ollama 內建 REST
-
+LLM_MODEL = "qwen2.5:7b-instruct"  # 預設模型
 class Message(BaseModel):
     role: str
     content: str
-
 class ChatRequest(BaseModel):
-    model: str = "qwen2.5:7b-instruct"
+    model: str = LLM_MODEL
     messages: list[Message]
     stream: bool = False
 
 class GenerateRequest(BaseModel):
-    model: str = "qwen2.5:7b-instruct"
+    model: str = LLM_MODEL
     prompt: str  
     stream: bool = False
 
@@ -25,8 +24,7 @@ app = FastAPI(title="Local LLM via Ollama")
 def chat(req: ChatRequest):
     resp = ollama.chat(
       model=req.model,
-      # Convert Pydantic models to dicts
-      messages=[msg.model_dump() for msg in req.messages], 
+      messages=[msg.model_dump() for msg in req.messages], # Convert Pydantic models to dicts
       stream=False
     )
     content = resp.get("message").get("content")
