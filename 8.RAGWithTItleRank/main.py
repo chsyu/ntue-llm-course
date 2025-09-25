@@ -1,7 +1,7 @@
 # filename: app.py
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Tuple
 import os, glob, re
 
 from langchain_ollama import ChatOllama, OllamaEmbeddings
