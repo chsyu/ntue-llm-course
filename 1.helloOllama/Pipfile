@@ -9,6 +9,11 @@ faiss-cpu = "*"
 ollama = "*"
 langchain-community = "*"
 langchain-ollama = "*"
+chromadb = "*"
+langchain-chroma = "*"
+fastapi = "*"
+pydantic = "*"
+uvicorn = "*"
 
 [dev-packages]
 

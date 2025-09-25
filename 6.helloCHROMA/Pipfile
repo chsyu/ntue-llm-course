@@ -9,6 +9,7 @@ faiss-cpu = "*"
 ollama = "*"
 langchain-community = "*"
 langchain-ollama = "*"
+chromadb = "*"
 
 [dev-packages]
 

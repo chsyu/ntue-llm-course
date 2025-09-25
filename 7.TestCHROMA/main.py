@@ -1,14 +1,14 @@
 import json
 from texts import texts
 from langchain_ollama import OllamaEmbeddings
-from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import Chroma
 
 # === 設定 ===
 MODEL_NAME = "nomic-embed-text"
 
-# === 建立或載入向量庫 ===
+# === 建立向量庫 ===
 embeddings = OllamaEmbeddings(model=MODEL_NAME)
-vs = FAISS.from_texts(texts=texts, embedding=embeddings)
+vs = Chroma.from_texts(texts=texts, embedding=embeddings)
 print("向量庫已建立。")
 
 # === 重複詢問使用者輸入 ===
