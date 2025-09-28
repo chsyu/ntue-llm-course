@@ -5,13 +5,9 @@ import uvicorn
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
-import os
 
 # 讀取 .env 檔案
 load_dotenv()
-
-# 從環境變數取得 API Key
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 LLM_MODEL = "gpt-4o-mini"  # OpenAI 模型
 DEFAULT_SYSTEM_PROMPT = "你是精煉且忠實的助教，禁止臆測。嚴禁生成不符合事實的內容。"
