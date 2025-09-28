@@ -9,6 +9,13 @@ faiss-cpu = "*"
 ollama = "*"
 langchain-community = "*"
 langchain-ollama = "*"
+chromadb = "*"
+langchain-chroma = "*"
+fastapi = "*"
+pydantic = "*"
+uvicorn = "*"
+langchain-openai = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
