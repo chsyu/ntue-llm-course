@@ -37,8 +37,7 @@ def chat(req: ChatRequest):
     # 改用 OpenAI
     llm = ChatOpenAI(
         model=req.model,
-        temperature=0.3,
-        openai_api_key=OPENAI_API_KEY
+        temperature=0.3
     )
 
     chain = prompt | llm  # LCEL：提示 → LLM
