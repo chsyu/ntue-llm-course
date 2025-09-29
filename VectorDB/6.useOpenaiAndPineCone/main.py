@@ -9,7 +9,6 @@ from pinecone import Pinecone, ServerlessSpec
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-assert OPENAI_API_KEY and PINECONE_API_KEY, "請在 .env 設定 OPENAI_API_KEY / PINECONE_API_KEY"
 
 # ==== 設定 ====
 EMBED_MODEL = "text-embedding-3-small"  # 1536 維；若改 -large → 改 DIMENSION=3072
