@@ -1,7 +1,3 @@
-import warnings
-warnings.filterwarnings("ignore", category=UserWarning, module=r"langchain_pinecone")
-warnings.filterwarnings("ignore", message=".*get_relevant_documents.*")
-
 from dotenv import load_dotenv
 import os
 from typing import List, Optional
@@ -31,7 +27,8 @@ LLM_MODEL   = "gpt-4o-mini"                 # OpenAI chat模型
 INDEX_NAME  = "rag-demo-index"
 DIMENSION   = 1536                          # text-embedding-3-small 對應 1536維
 DEFAULT_SYSTEM_PROMPT = (
-    ""
+    "你是精煉且忠實的助教，禁止臆測。嚴禁生成不符合事實的內容。"
+    "若無法從提供的內容得到答案，請直說不知道。"
 )
 
 # =====================
@@ -80,7 +77,6 @@ retriever_chain = RunnablePassthrough.assign(
 prompt = ChatPromptTemplate.from_messages([
     ("system", "{system}"),
     ("user",
-     ""
      "【內容】\n{context}\n\n"
      "【問題】\n{question}")
 ])
