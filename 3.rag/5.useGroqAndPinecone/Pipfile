@@ -20,6 +20,7 @@ supabase = "*"
 pinecone-client = "*"
 langchain-pinecone = "*"
 langchain = "*"
+langchain-groq = "*"
 
 [dev-packages]
 langchain = ">=0.3.0"

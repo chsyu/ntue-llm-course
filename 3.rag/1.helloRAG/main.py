@@ -11,6 +11,8 @@ from texts import texts  # 你的教學語料（List[str]）
 from langchain_ollama import OllamaEmbeddings, ChatOllama
 from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+
 
 # =====================
 # 向量庫設定
@@ -93,7 +95,7 @@ def chat(req: ChatRequest):
     llm = ChatOllama(model=req.model, temperature=0.2)
 
     # LCEL：prompt -> llm（檢索在 chain 外）
-    chain = prompt | llm
+    chain = prompt | llm | StrOutputParser()
 
     result = chain.invoke({"system": sys_merged, "context": context, "question": req.user})
     answer = result.content

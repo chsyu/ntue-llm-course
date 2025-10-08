@@ -12,6 +12,8 @@ from langchain_ollama import OllamaEmbeddings, ChatOllama
 from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
+
 
 # =====================
 # 基本設定
@@ -72,7 +74,7 @@ prompt = ChatPromptTemplate.from_messages([
 
 llm = ChatOllama(model=LLM_MODEL, temperature=0.2)
 
-rag_chain = retriever_chain | prompt | llm  # ⭐ 完整 RAG chain
+rag_chain = retriever_chain | prompt | llm | StrOutputParser()  # ⭐ 完整 RAG chain
 
 # =====================
 # FastAPI
