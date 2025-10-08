@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+numpy = "<2,>=1.24"
+faiss-cpu = "*"
+ollama = "*"
+langchain-community = "*"
+langchain-ollama = "*"
+chromadb = "*"
+langchain-chroma = "*"
+fastapi = "*"
+pydantic = "*"
+uvicorn = "*"
+langchain-openai = "*"
+python-dotenv = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.11"
