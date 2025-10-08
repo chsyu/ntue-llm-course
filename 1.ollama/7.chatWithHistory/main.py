@@ -3,7 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.chat_history import InMemoryChatMessageHistory
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import BaseMessage, trim_messages
 import asyncio
 
 LLM_MODEL = "qwen2.5:7b-instruct"
@@ -12,23 +12,15 @@ DEFAULT_SYSTEM_PROMPT = "你是精煉且忠實的助教，禁止臆測。嚴禁�
 # 全局聊天歷史存儲（可換成 Redis/DB）
 chat_histories: dict[str, InMemoryChatMessageHistory] = {}
 
-def _trim_messages(messages: list[BaseMessage], keep_last: int = 24) -> list[BaseMessage]:
-    """簡易截斷：僅保留最後 keep_last 則訊息（含 system/human/ai）。"""
-    if len(messages) <= keep_last:
-        return messages
-    # 保留第一則 system（若存在） + 最後 N 則
-    head = messages[:1] if messages and messages[0].type == "system" else []
-    tail = messages[-(keep_last-len(head)):] if len(head) > 0 else messages[-keep_last:]
-    return head + tail
-
 def get_session_history(session_id: str) -> InMemoryChatMessageHistory:
     """取得/建立該 session 的歷史，並在回傳前做截斷控制。"""
     h = chat_histories.get(session_id)
     if h is None:
         h = InMemoryChatMessageHistory()
         chat_histories[session_id] = h
-    # 截斷（可依模型上下文窗口調整策略）
-    h.messages = _trim_messages(h.messages, keep_last=24)
+    # 使用 LangChain 原生的 trim_messages 進行截斷
+    if h.messages:
+        h.messages = trim_messages(h.messages, max_tokens=24, token_counter=len, include_system=True)
     return h
 
 def create_chat_chain():
@@ -82,7 +74,6 @@ def print_chat_history(session_id: str = "default"):
     print("-" * 30)
 
 def clear_chat_history(session_id: str = "default"):
-    # 直接重建，避免不同實作沒有 clear()
     chat_histories[session_id] = InMemoryChatMessageHistory()
     print("✅ 聊天歷史已清除。")
 
