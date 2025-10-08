@@ -15,6 +15,7 @@ from pinecone import Pinecone, ServerlessSpec
 
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
 
 # =====================
 # 基本設定
@@ -89,7 +90,7 @@ prompt = ChatPromptTemplate.from_messages([
 
 llm = ChatGroq(model=LLM_MODEL, temperature=0.2, groq_api_key=GROQ_API_KEY)
 
-rag_chain = retriever_chain | prompt | llm
+rag_chain = retriever_chain | prompt | llm | StrOutputParser()
 
 # =====================
 # FastAPI
@@ -110,8 +111,7 @@ def chat(req: ChatRequest):
     )
 
     # 執行完整 RAG 鏈
-    result = rag_chain.invoke({"system": sys_merged, "question": req.user})
-    answer = result.content
+    answer = rag_chain.invoke({"system": sys_merged, "question": req.user})
 
     retrieved = retriever.get_relevant_documents(req.user)
     sources = [d.page_content for d in retrieved]
