@@ -13,7 +13,7 @@ load_dotenv()
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-LLM_MODEL = "openai/gpt-oss-20b"  # Groq 模型
+LLM_MODEL = "llama-3.1-8b-instant"  # Groq 模型
 DEFAULT_SYSTEM_PROMPT = "你是精煉且忠實的助教，禁止臆測。嚴禁生成不符合事實的內容。"
 
 # 全局聊天歷史存儲（可換成 Redis/DB）
