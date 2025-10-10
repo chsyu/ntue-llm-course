@@ -10,7 +10,7 @@ from langchain_core.messages.utils import trim_messages
 
 load_dotenv()
 
-# === 單一節點：LLM 回覆 + 自動 trim ===
+# === 單一節點：LLM 回覆 + 簡單 trim ===
 def chat_llm(state: MessagesState):
     llm = ChatGroq(
         model="llama-3.1-8b-instant",
@@ -18,10 +18,13 @@ def chat_llm(state: MessagesState):
         temperature=0.3,
     )
 
-    # 用 trimmed 給 LLM，而不是整個 state["messages"]
-    response = llm.invoke(state["messages"])
+    messages = state["messages"]
+    
+    # 簡單做法：只保留最近的 20 條消息（約 10 輪對話）
+    if len(messages) > 20:
+        messages = messages[-20:]
 
-    # 回傳「局部更新」的訊息清單
+    response = llm.invoke(messages)
     return {"messages": [response]}
 
 # === 建立 LangGraph ===
