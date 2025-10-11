@@ -7,24 +7,22 @@ from langchain_core.tools import tool
 
 def _get_location(city: str):
     """獲取城市座標"""
-    url = "https://geocoding-api.open-meteo.com/v1/search"
-    params = {"name": city, "count": 1, "language": "zh"}
-    
-    response = requests.get(url, params=params, timeout=5)
-    data = response.json()
-    
-    if not data.get("results"):
+    url = "https://geopy-server.vercel.app/city_to_lat_lng_timezone/"
+    params = {"city": city}  # 交給 requests 自動編碼
+    r = requests.get(url, params=params, timeout=10)
+    data = r.json()
+
+    if not data:
         raise ValueError(f"找不到城市: {city}")
-    
-    location = data["results"][0]
-    return location["latitude"], location["longitude"], location["name"]
+
+    return data["latitude"], data["longitude"], data["city"]
 
 @tool
 def get_current_weather(city: str) -> str:
     """獲取指定城市的當前天氣狀況，包括溫度、濕度、風速等即時資訊"""
     try:
         lat, lon, name = _get_location(city)
-        
+
         url = "https://api.open-meteo.com/v1/forecast"
         params = {
             "latitude": lat,
@@ -51,12 +49,18 @@ def get_current_weather(city: str) -> str:
 
 
 @tool  
-def get_weather_forecast(city: str, days: int = 5) -> str:
-    """獲取指定城市的天氣預報，支援1-7天的未來天氣趨勢查詢"""
+def get_weather_forecast(city: str, days: int = 7) -> str:
+    """獲取指定城市的天氣預報，支援1-16天的未來天氣趨勢查詢
+    
+    Args:
+        city: 城市名稱
+        days: 預報天數，預設7天，最多支援16天
+    """
     try:
-        days = max(1, min(days, 7))  # 限制1-7天
+        # 限制在 1-16 天之間，預設為 7 天
+        days = max(1, min(days, 16))
         lat, lon, name = _get_location(city)
-        
+
         url = "https://api.open-meteo.com/v1/forecast"
         params = {
             "latitude": lat,

@@ -17,7 +17,7 @@ async def main():
             
         try:
             response = await chat(user_input)
-            print(f"助手: {response}")
+            print(f"\n助手: {response}")
         except Exception as e:
             print(f"錯誤: {e}")
 
