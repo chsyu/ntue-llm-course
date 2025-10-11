@@ -15,7 +15,7 @@ class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
 
 # 更自然的系統提示
-SYSTEM_MESSAGE = SystemMessage(content="""你是專業的天氣助手，用繁體中文回答。
+SYSTEM_MESSAGE = SystemMessage(content="""你是專業的天氣助手，請務必使用繁體中文回答，避免使用簡體中文字。
 
 你有兩個工具可以使用：
 - get_current_weather(city): 查詢指定城市的當前天氣狀況
@@ -29,6 +29,11 @@ SYSTEM_MESSAGE = SystemMessage(content="""你是專業的天氣助手，用繁�
   * 一週：days=7
   * 兩週：days=14
   * 根據用戶具體要求調整天數（最多16天）
+
+回答時請：
+- 使用標準繁體中文字（如：氣溫、濕度、風速、陰天、晴朗）
+- 避免簡體中文字（如：气温、湿度、风速、阴天、晴朗）
+- 提供實用的建議（穿衣、出行等）
 
 相信你的語言理解能力，根據問題的語意做出最佳判斷。""")
 
