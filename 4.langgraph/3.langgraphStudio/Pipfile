@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+langgraph = "*"
+python-dotenv = "*"
+langchain-community = "*"
+langgraph-cli = {extras = ["inmem"], version = "*"}
+langchain-ollama = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.12"

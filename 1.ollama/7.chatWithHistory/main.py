@@ -1,110 +1,71 @@
 from langchain_ollama import ChatOllama
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_core.chat_history import InMemoryChatMessageHistory
-from langchain_core.messages import BaseMessage, trim_messages
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+from langchain_core.runnables import RunnableLambda
 import asyncio
 
 LLM_MODEL = "qwen2.5:7b-instruct"
-DEFAULT_SYSTEM_PROMPT = "你是精煉且忠實的助教，禁止臆測。嚴禁生成不符合事實的內容。"
+DEFAULT_SYSTEM_PROMPT = "你是精煉且忠實的助教，禁止臆測。"
 
-# 全局聊天歷史存儲（可換成 Redis/DB）
-chat_histories: dict[str, InMemoryChatMessageHistory] = {}
+# 儲存多個 session 的對話歷史
+chat_histories: dict[str, list] = {}
 
-def get_session_history(session_id: str) -> InMemoryChatMessageHistory:
-    """取得/建立該 session 的歷史，並在回傳前做截斷控制。"""
-    h = chat_histories.get(session_id)
-    if h is None:
-        h = InMemoryChatMessageHistory()
-        chat_histories[session_id] = h
-    # 使用 LangChain 原生的 trim_messages 進行截斷
-    if h.messages:
-        h.messages = trim_messages(h.messages, max_tokens=24, token_counter=len, include_system=True)
-    return h
+def get_session_messages(session_id: str) -> list:
+    """取得或建立該 session 的對話歷史"""
+    if session_id not in chat_histories:
+        chat_histories[session_id] = [SystemMessage(content=DEFAULT_SYSTEM_PROMPT)]
+    return chat_histories[session_id]
 
-def create_chat_chain():
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", DEFAULT_SYSTEM_PROMPT),
-        MessagesPlaceholder("history"),
-        ("human", "{input}")
-    ])
-    llm = ChatOllama(model=LLM_MODEL, temperature=0.3)
-    chain = prompt | llm | StrOutputParser()
-    chain_with_history = RunnableWithMessageHistory(
-        chain,
-        get_session_history,
-        input_messages_key="input",
-        history_messages_key="history",
-    )
-    return chain_with_history
+# --- Step 1: 建立 RunnableLambda，用來生成 messages ---
+def build_messages(input_dict: dict):
+    """組裝完整 messages 給 LLM"""
+    session_id = input_dict["session_id"]
+    user_input = input_dict["input"]
+    messages = get_session_messages(session_id)
 
+    # 加入 HumanMessage
+    messages.append(HumanMessage(content=user_input))
+    return messages
 
-async def chat_with_history(chain, user_input: str, session_id: str = "default"):
-    config = {"configurable": {"session_id": session_id}}
-    return await chain.ainvoke({"input": user_input}, config=config)
+# --- Step 2: 定義 LLM 與輸出解析 ---
+llm = ChatOllama(model=LLM_MODEL, temperature=0.7)
+parser = StrOutputParser()
+
+# --- Step 3: 用 LCEL 串接 ---
+chain = (
+    RunnableLambda(build_messages)
+    | llm
+    | parser
+)
+
+# --- Step 4: 執行函數 ---
+async def chat_manual_lcel(user_input: str, session_id: str = "default"):
+    # 傳入 input + session_id，讓 build_messages 有資訊組合 messages
+    result = await chain.ainvoke({"input": user_input, "session_id": session_id})
+
+    # 執行完後 append AI 回覆
+    messages = get_session_messages(session_id)
+    messages.append(AIMessage(content=result))
+    return result
 
 def print_welcome():
     print("=" * 50)
     print("🤖 LangChain 聊天機器人")
     print("=" * 50)
-    print("輸入 'quit' 或 'exit' 結束對話")
-    print("輸入 'clear' 清除聊天歷史")
-    print("輸入 'history' 查看聊天歷史")
-    print("-" * 50)
-
-_ROLE_MAP = {
-    "system": "系統",
-    "human": "用戶",
-    "ai": "助手",
-    "tool": "工具",
-    "function": "函式",
-}
-
-def print_chat_history(session_id: str = "default"):
-    h = chat_histories.get(session_id)
-    if not h or not h.messages:
-        print("目前沒有聊天歷史。")
-        return
-    print("\n📋 聊天歷史:")
-    print("-" * 30)
-    for i, m in enumerate(h.messages, 1):
-        role = _ROLE_MAP.get(m.type, m.type)
-        print(f"{i}. {role}: {getattr(m, 'content', '')}")
-    print("-" * 30)
-
-def clear_chat_history(session_id: str = "default"):
-    chat_histories[session_id] = InMemoryChatMessageHistory()
-    print("✅ 聊天歷史已清除。")
 
 async def main():
     print_welcome()
-    chain = create_chat_chain()
     session_id = "default"
+
     while True:
-        try:
-            user_input = input("\n👤 你: ").strip()
-            low = user_input.lower()
-            if low in {"quit", "exit", "退出"}:
-                print("\n👋 再見！")
-                break
-            if low in {"clear", "清除"}:
-                clear_chat_history(session_id); continue
-            if low in {"history", "歷史"}:
-                print_chat_history(session_id); continue
-            if not user_input:
-                print("請輸入一些內容..."); continue
-
-            print("🤔 正在思考...")
-            resp = await chat_with_history(chain, user_input, session_id)
-            print(f"\n🤖 助手: {resp}")
-
-        except KeyboardInterrupt:
-            print("\n\n👋 收到中斷訊號，再見！")
+        user_input = input("\n👤 你: ").strip()
+        if user_input.lower() in {"quit", "exit", "退出"}:
+            print("\n👋 再見！")
             break
-        except Exception as e:
-            print(f"\n❌ 發生錯誤: {e}")
-            print("請重試...")
+
+        print("🤔 正在思考...")
+        resp = await chat_manual_lcel(user_input, session_id)
+        print(f"\n🤖 助手: {resp}")
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -1,0 +1,12 @@
+{
+  "dependencies": [
+    "langgraph",
+    "langchain-core", 
+    "langchain-ollama",
+    "langchain-community",
+    "python-dotenv"
+  ],
+  "graphs": {
+    "default": "main:app"
+  }
+}
