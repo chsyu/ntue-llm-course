@@ -39,7 +39,7 @@ chain = (
 )
 
 # --- Step 4: 執行函數 ---
-async def chat_manual_lcel(user_input: str, session_id: str = "default"):
+async def chat_with_history(user_input: str, session_id: str = "default"):
     # 傳入 input + session_id，讓 build_messages 有資訊組合 messages
     result = await chain.ainvoke({"input": user_input, "session_id": session_id})
 
@@ -64,7 +64,7 @@ async def main():
             break
 
         print("🤔 正在思考...")
-        resp = await chat_manual_lcel(user_input, session_id)
+        resp = await chat_with_history(user_input, session_id)
         print(f"\n🤖 助手: {resp}")
 
 if __name__ == "__main__":
